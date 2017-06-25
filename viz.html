@@ -5,6 +5,7 @@
 		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDjvQyOX1jntW_u0pehOIJ3Ota4KIy83Zg"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="assets/main.css">
 		<!-- Vex Assets -->
 		<script type="text/javascript" src="assets/vex.combined.min.js"></script>
 		<script type="text/javascript">vex.defaultOptions.className = 'vex-theme-plain';</script>
@@ -13,25 +14,7 @@
 		<link href="https://fonts.googleapis.com/css?family=Roboto:400,900" rel="stylesheet">
 		<style>
 
-			html, body {
-				padding: 0;
-				margin: 0;
-				font-family: 'Roboto', sans-serif;
-			}
 
-			#map {
-				display: block;
-				margin: 0 auto;
-				width: 100vw;
-				height: 80vh;
-			}
-
-			.controls {
-				display: block;
-				margin: 0 auto;
-				width: 500px;
-				text-align: center;
-			}
 
 		</style>
 	</head>
@@ -47,13 +30,12 @@
 		<div class="controls">
 			<h1>Simulation Time: <span class="fill-sim-time">0</span></h1>
 			<div>
-				<label>
-					Seek: 
-					<input id="time" type="range">
-				</label>
-				<button id="back">Back</button>
-				<button id="forward">Forward</button>
+				<button id="back" class="btn">Back</button>
+				<label>Seek</label>
+				<input id="time" type="range">
+				<button id="forward" class="btn">Forward</button>
 			</div>
+			<a href="index.html"><button class="btn">Map Creator</button></a>
 		</div>
 		
 

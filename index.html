@@ -5,6 +5,7 @@
 		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDjvQyOX1jntW_u0pehOIJ3Ota4KIy83Zg"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="assets/main.css">
 		<!-- Vex Assets -->
 		<script type="text/javascript" src="assets/vex.combined.min.js"></script>
 		<script type="text/javascript">vex.defaultOptions.className = 'vex-theme-plain';</script>
@@ -12,17 +13,7 @@
 		<link rel="stylesheet" type="text/css" href="assets/vex-theme-plain.css">
 		<style>
 
-			html, body {
-				padding: 0;
-				margin: 0;
-			}
 
-			#map {
-				display: block;
-				margin: 0 auto;
-				width: 100vw;
-				height: 100vh;
-			}
 
 		</style>
 	</head>
@@ -34,6 +25,12 @@
 		<div id="theme" accesskey="t"></div>
 
 		<div id="map"></div>
+
+        <div class="controls">
+            <h1>Atlas</h1>
+            <p>Map Creator for F.I.S.H.</p>
+            <a href="viz.html"><button class="btn">Simulation Viewer</button></a>
+        </div>
 
 		<script type="text/javascript" src="assets/map-styles.js"></script>
 
@@ -173,7 +170,7 @@
 			let init = () => {
                 // For more options see: https://developers.google.com/maps/documentation/javascript/reference#MapOptions
                 let mapOptions = {
-                    zoom: 11,
+                    zoom: 15,
                     center: new google.maps.LatLng(41.259716, -95.960588),
                     styles: removeThemeLabels(MAP_STYLES)
                 };
@@ -182,6 +179,13 @@
 
                 let map = new google.maps.Map(mapElement, mapOptions);
                 window.mapRef = map;
+
+                let mapThemeTag = localStorage.getItem('map-theme-tag');
+                let mapThemeStyle = localStorage.getItem('map-theme-style');
+                if(mapThemeTag && mapThemeStyle){
+                    let theme = JSON.parse(mapThemeStyle);
+                    changeMapStyle(map, mapThemeTag, theme);
+                }
 
                 google.maps.event.addListener(map, 'click', e => {
                 	let coord = e.latLng;
