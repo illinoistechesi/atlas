@@ -5,6 +5,11 @@
 		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDjvQyOX1jntW_u0pehOIJ3Ota4KIy83Zg"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+		<!-- Vex Assets -->
+		<script type="text/javascript" src="assets/vex.combined.min.js"></script>
+		<script type="text/javascript">vex.defaultOptions.className = 'vex-theme-plain';</script>
+		<link rel="stylesheet" type="text/css" href="assets/vex.css">
+		<link rel="stylesheet" type="text/css" href="assets/vex-theme-plain.css">
 		<style>
 
 			html, body {
@@ -24,9 +29,12 @@
 
 	<body>
 
+		<div id="import" accesskey="i"></div>
+		<div id="export" accesskey="s"></div>
+
 		<div id="map"></div>
 
-		<script type="text/javascript" src="map-styles.js"></script>
+		<script type="text/javascript" src="assets/map-styles.js"></script>
 
 		<script type="text/javascript">
 
@@ -71,6 +79,12 @@
             		//markers.splice(idx, 1);
             	}
             }
+
+            let setHotKey = (id, callback) => {
+            	document.getElementById(id).addEventListener('click', e => {
+            		callback(e);
+            	});
+            }
         
 			let init = () => {
                 // For more options see: https://developers.google.com/maps/documentation/javascript/reference#MapOptions
@@ -102,11 +116,33 @@
                 	});
                 });
 
-                let marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(40.6700, -73.9400),
-                    map: map,
-                    title: 'Snazzy!'
+                setHotKey('import', e => {
+                	vex.dialog.prompt({
+                		message: 'Import your coordinates:',
+                		callback: (value) => {
+                			console.log(value);
+                		}
+                	});
                 });
+
+                setHotKey('export', e => {
+                	let output = '';
+                	markers.forEach((entry, idx) => {
+                		if(entry){
+							let coord = entry.ref.position;
+                			output += coord.lat() + ',' + coord.lng() + '\n';
+                		}
+                	});
+                	// vex.dialog.prompt({
+                	// 	message: 'Exported coordinates:',
+                	// 	value: output,
+                	// 	callback: (value) => {}
+                	// });
+                	vex.dialog.alert({
+                		unsafeMessage: output
+                	})
+                });
+
             }
 
             google.maps.event.addDomListener(window, 'load', init);
