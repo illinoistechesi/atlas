@@ -226,15 +226,37 @@
                 			window.MAP_TAG = value;
                 		}
                 	}
-                })
+                });
+
+                let importCoordinates = (tag) => {
+                    vex.dialog.prompt({
+                        message: 'Import your coordinates:',
+                        callback: (value) => {
+                            localStorage.setItem(tag, value);
+                        }
+                    });
+                }
 
                 setHotKey('import', e => {
-                	vex.dialog.prompt({
-                		message: 'Import your coordinates:',
-                		callback: (value) => {
-
-                		}
-                	});
+                    vex.dialog.prompt({
+                        message: 'Enter a key for this map:',
+                        callback: (tag) => {
+                            let existing = localStorage.getItem(tag);
+                            if(existing){
+                                vex.dialog.confirm({
+                                    message: 'This will overwrite an existing map, are you sure?',
+                                    callback: (yes) => {
+                                        if(yes){
+                                            importCoordinates(tag);
+                                        }
+                                    }
+                                })
+                            }
+                            else{
+                                importCoordinates(tag);
+                            }
+                        }
+                    });
                 });
 
                 setHotKey('export', e => {
