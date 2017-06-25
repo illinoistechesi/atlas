@@ -40,15 +40,14 @@
 		<script type="text/javascript">
 
 			let removeThemeLabels = (theme) => {
-	            theme.forEach(style => {
-	            	let el = style.elementType;
-	            	if(el === 'labels' || el === 'labels.text.fill' || el === 'labels.text.stroke'){
-	            		style.stylers.forEach(styler => {
-	            			if(styler.visibility){
-	            				styler.visibility = 'off';
-	            			}
-	            		});
-	            	}
+	            let elementTypes = ['labels', 'labels.text.fill', 'labels.text.stroke'];
+	            elementTypes.forEach(elType => {
+		            theme.push({
+		            	elementType: 'labels',
+		            	stylers: [{
+		            		visibility: 'off'
+		            	}]
+		            });
 	            });
 	            return theme;
 			}
