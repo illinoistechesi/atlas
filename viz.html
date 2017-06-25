@@ -188,6 +188,7 @@
 											t++;
 											if(t > maxSimTime){
 												clearInterval(itv);
+												itv = false;
 											}
 										}, step);
 									}
@@ -210,6 +211,13 @@
 										map: map,
 										coord: coord
 									});
+									let first = atlas.markers[0];
+									if(first){
+										map.setCenter({
+											lat: first.data.lat,
+											lng: first.data.lng
+										});
+									}
 								});
 								let simString = localStorage.getItem('data-' + value);
 								if(simString){
