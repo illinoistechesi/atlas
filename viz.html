@@ -10,18 +10,27 @@
 		<script type="text/javascript">vex.defaultOptions.className = 'vex-theme-plain';</script>
 		<link rel="stylesheet" type="text/css" href="assets/vex.css">
 		<link rel="stylesheet" type="text/css" href="assets/vex-theme-plain.css">
+		<link href="https://fonts.googleapis.com/css?family=Roboto:400,900" rel="stylesheet">
 		<style>
 
 			html, body {
 				padding: 0;
 				margin: 0;
+				font-family: 'Roboto', sans-serif;
 			}
 
 			#map {
 				display: block;
 				margin: 0 auto;
 				width: 100vw;
-				height: 60vh;
+				height: 80vh;
+			}
+
+			.controls {
+				display: block;
+				margin: 0 auto;
+				width: 500px;
+				text-align: center;
 			}
 
 		</style>
@@ -35,15 +44,17 @@
 
 		<div id="map"></div>
 
-		<h1>Simulation Time: <span class="fill-sim-time">0</span></h1>
-		<fieldset>
-			<label>
-				Seek: 
-				<input id="time" type="range">
-			</label>
-			<button id="back">Back</button>
-			<button id="forward">Forward</button>
-		</fieldset>
+		<div class="controls">
+			<h1>Simulation Time: <span class="fill-sim-time">0</span></h1>
+			<div>
+				<label>
+					Seek: 
+					<input id="time" type="range">
+				</label>
+				<button id="back">Back</button>
+				<button id="forward">Forward</button>
+			</div>
+		</div>
 		
 
 		<script type="text/javascript" src="assets/map-styles.js"></script>
@@ -64,7 +75,7 @@
             atlas.init().then(done => {
 
 				let mapOptions = {
-				    zoom: 14,
+				    zoom: 15,
 				    center: new google.maps.LatLng(41.259716, -95.960588),
 				    styles: atlas.removeThemeLabels(MAP_STYLES)
 				};
@@ -168,7 +179,7 @@
 						else{
 							vex.dialog.prompt({
 								message: 'Select simulation speed (ms/step):',
-								value: 1000,
+								value: 250,
 								callback: (step) => {
 									if(step){
 										let t = 0;
