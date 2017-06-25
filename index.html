@@ -2,13 +2,21 @@
 <html>
 	<head>
 		<title>Atlas</title>
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDjvQyOX1jntW_u0pehOIJ3Ota4KIy83Zg"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 		<style>
 
-			html{
+			html, body {
 				padding: 0;
 				margin: 0;
+			}
+
+			#map {
+				display: block;
+				margin: 0 auto;
+				width: 100vw;
+				height: 100vh;
 			}
 
 		</style>
@@ -18,9 +26,90 @@
 
 		<div id="map"></div>
 
+		<script type="text/javascript" src="map-styles.js"></script>
+
 		<script type="text/javascript">
 
+            MAP_STYLES.forEach(style => {
+            	let el = style.elementType;
+            	if(el === 'labels' || el === 'labels.text.fill' || el === 'labels.text.stroke'){
+            		style.stylers.forEach(styler => {
+            			if(styler.visibility){
+            				styler.visibility = 'off';
+            			}
+            		});
+            	}
+            });
 
+            let markers = [];
+
+            let addMarker = (data) => {
+            	let marker = new google.maps.Marker({
+            		position: new google.maps.LatLng(data.lat, data.lng),
+            		map: data.map,
+            		title: data.title || ''
+            	});
+            	let entry = {
+            		ref: marker,
+            		data: data
+            	}
+            	markers.push(entry);
+            	let idx = markers.length - 1;
+            	for(let event in data.events){
+            		google.maps.event.addListener(marker, event, e => {
+            			data.events[event](e, marker, idx);
+            		});
+            	}
+            	return entry;
+            }
+
+            let removeMarker = (idx) => {
+            	let entry = markers[idx];
+            	if(entry){
+            		entry.ref.setMap(null);
+            		markers[idx] = null;
+            		//markers.splice(idx, 1);
+            	}
+            }
+        
+			let init = () => {
+                // For more options see: https://developers.google.com/maps/documentation/javascript/reference#MapOptions
+                let mapOptions = {
+                    zoom: 11,
+                    center: new google.maps.LatLng(41.259716, -95.960588),
+                    styles: MAP_STYLES
+                };
+
+                let mapElement = document.getElementById('map');
+
+                let map = new google.maps.Map(mapElement, mapOptions);
+
+                google.maps.event.addListener(map, 'click', e => {
+                	let coord = e.latLng;
+                	let entry = addMarker({
+                		map: map,
+                		lat: coord.lat(),
+                		lng: coord.lng(),
+                		events: {
+                			click: (e, m, i) => {
+                				console.log('click', i);
+                			},
+                			dblclick: (e, m, i) => {
+                				console.log('dblclick', i);
+                				removeMarker(i);
+                			}
+                		}
+                	});
+                });
+
+                let marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(40.6700, -73.9400),
+                    map: map,
+                    title: 'Snazzy!'
+                });
+            }
+
+            google.maps.event.addDomListener(window, 'load', init);
 
 		</script>
 		
