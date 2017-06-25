@@ -31,6 +31,7 @@
 
 		<div id="import" accesskey="i"></div>
 		<div id="export" accesskey="e"></div>
+		<div id="theme" accesskey="t"></div>
 
 		<div id="map"></div>
 
@@ -38,16 +39,47 @@
 
 		<script type="text/javascript">
 
-            MAP_STYLES.forEach(style => {
-            	let el = style.elementType;
-            	if(el === 'labels' || el === 'labels.text.fill' || el === 'labels.text.stroke'){
-            		style.stylers.forEach(styler => {
-            			if(styler.visibility){
-            				styler.visibility = 'off';
-            			}
-            		});
-            	}
-            });
+			let removeThemeLabels = (theme) => {
+	            theme.forEach(style => {
+	            	let el = style.elementType;
+	            	if(el === 'labels' || el === 'labels.text.fill' || el === 'labels.text.stroke'){
+	            		style.stylers.forEach(styler => {
+	            			if(styler.visibility){
+	            				styler.visibility = 'off';
+	            			}
+	            		});
+	            	}
+	            });
+	            return theme;
+			}
+
+			let changeMapStyle = (map, name, styles) => {
+            	let theme = removeThemeLabels(styles);
+            	let styledMapType = new google.maps.StyledMapType(theme, {
+            		map: map,
+            		name: name
+            	});
+            	map.mapTypes.set(name, styledMapType);
+            	map.setMapTypeId(name);
+            }
+
+            let getMapStyleByURL = (url) => {
+            	const SNAZZY_MAPS_URL = 'https://snazzymaps.com/explore.json?key=6fbb0a74-ec67-4329-83ee-15edd4740c4b';
+            	return new Promise((resolve, reject) => {
+					$.get(SNAZZY_MAPS_URL, {
+						pageSize: 1000
+					}, (res) => {
+						res.styles.forEach(style => {
+							if(style.url === url){
+								resolve(style);
+							}
+						});
+						reject('Could not find style.');
+					}).error((jqXHR, textStatus, errorThrown) => {
+						reject(errorThrown);
+					});
+            	});
+            }
 
             let markers = [];
 
@@ -144,12 +176,13 @@
                 let mapOptions = {
                     zoom: 11,
                     center: new google.maps.LatLng(41.259716, -95.960588),
-                    styles: MAP_STYLES
+                    styles: removeThemeLabels(MAP_STYLES)
                 };
 
                 let mapElement = document.getElementById('map');
 
                 let map = new google.maps.Map(mapElement, mapOptions);
+                window.mapRef = map;
 
                 google.maps.event.addListener(map, 'click', e => {
                 	let coord = e.latLng;
@@ -199,6 +232,22 @@
                 		message: 'Exported coordinates:',
                 		value: markersToString(markers),
                 		callback: (value) => {}
+                	});
+                });
+
+                setHotKey('theme', e => {
+                	vex.dialog.prompt({
+                		message: 'Enter map theme URL:',
+                		callback: (value) => {
+                			getMapStyleByURL(value).then(style => {
+                				let tag = style.name;
+                				let theme = JSON.parse(style.json);
+                				changeMapStyle(map, tag, theme);
+                				vex.dialog.alert('Changed map theme to: ' + tag);
+                			}).catch(err => {
+                				vex.dialog.alert('Error: ' + err);
+                			});
+                		}
                 	});
                 });
 
