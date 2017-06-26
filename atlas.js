@@ -1,5 +1,15 @@
 let Atlas = () => {
 
+    let shiftDown = false;
+    window.addEventListener('keydown', e => {
+        if(e.shiftKey){
+            shiftDown = true;
+        }
+    });
+    window.addEventListener('keyup', e => {
+        shiftDown = false;
+    });
+
 	let atlas = {
 
 		init: () => {
@@ -8,17 +18,28 @@ let Atlas = () => {
 			});
 		},
 
+        setMap: (map) => {
+            atlas.map = map;
+        },
+
+        isShiftClick: () => {
+            return shiftDown;
+        },
+
 		// Map Markers
 
-
+        map: false,
         markers: [],
 
         addMarker: (data, options) => {
         	let opt = options || {};
+            if(!data.name){
+                data.name = 'Location ' + (atlas.markers.length);
+            }
         	let marker = new google.maps.Marker({
         		position: new google.maps.LatLng(data.lat, data.lng),
         		map: data.map,
-        		title: data.title || ''
+        		title: data.name
         	});
         	let entry = {
         		ref: marker,
@@ -64,32 +85,55 @@ let Atlas = () => {
         	});
         },
 
+
+        updateName: (idx) => {
+            return new Promise((resolve, reject) => {
+                let entry = atlas.markers[idx];
+                let vx = vex.dialog.prompt({
+                    message: 'Update Marker Name',
+                    value: entry.data.name || 'Location ' + idx,
+                    callback: (value) => {
+                        if(value){
+                            entry.data.name = value;
+                            atlas.saveMarkers(window.MAP_TAG, atlas.markers);
+                            resolve(true);
+                        }
+                        else{
+                            resolve(false);
+                        }
+                    }
+                });
+            });
+        },
+
         markersToString: (markers) => {
-			let output = '';
-        	markers.forEach((entry, idx) => {
-        		if(entry !== null){
-					let coord = entry.ref.position;
-        			output += coord.lat() + ',' + coord.lng() + '$';
-        		}
-        	});
-        	return output;
+            let output = '';
+            markers.forEach((entry, idx) => {
+                if(entry !== null){
+                    let coord = entry.ref.position;
+                    let name = entry.data.name || 'Location ' + idx;
+                    output += coord.lat() + ',' + coord.lng() + ',' + name + '$';
+                }
+            });
+            return output;
         },
 
         markersFromString: (str) => {
-        	return str.split('$').map(pair => {
-        		let coords = pair.split(',').map(s => parseFloat(s));
-        		return coords;
-        	}).filter(coords => coords.length !== 1).map(coords =>{
-        		return {
-        			lat: coords[0],
-        			lng: coords[1]
-        		}
-        	});
+            return str.split('$').map(pair => {
+                let coords = pair.split(',');
+                return coords;
+            }).filter(coords => coords.length !== 1).map((coords, idx) =>{
+                return {
+                    lat: parseFloat(coords[0]),
+                    lng: parseFloat(coords[1]),
+                    name: coords[2] || 'Location ' + idx
+                }
+            });
         },
 
         saveMarkers: (tag, list) => {
         	if(tag){
-        		localStorage.setItem(tag, markersToString(list));
+        		localStorage.setItem(tag, atlas.markersToString(list));
         	}
         },
 
@@ -98,18 +142,45 @@ let Atlas = () => {
         	return str ? atlas.markersFromString(str) : false;
         },
 
+        lastInfoWindow: false,
+
         addDefaultMarker: (data) => {
 			return atlas.addMarker({
         		map: data.map,
+                name: data.name,
         		lat: data.coord.lat,
         		lng: data.coord.lng,
         		events: {
         			click: (e, m, i) => {
         				console.log('click', i);
+                        if(atlas.isShiftClick()){
+                            atlas.removeMarker(i);
+                        }
+                        else{
+                            let entry = atlas.markers[i];
+                            let info = new google.maps.InfoWindow({
+                                content: entry.data.name
+                            });
+                            if(atlas.map){
+                                info.open(atlas.map, entry.ref);
+                                if(atlas.lastInfoWindow){
+                                    atlas.lastInfoWindow.close();
+                                    atlas.lastInfoWindow = false;
+                                }
+                                atlas.lastInfoWindow = info;
+                            }
+                        }
         			},
         			dblclick: (e, m, i) => {
         				console.log('dblclick', i);
-        				removeMarker(i);
+        				atlas.updateName(i).then(updated => {
+                            if(updated){
+                                if(atlas.lastInfoWindow){
+                                    atlas.lastInfoWindow.close();
+                                    atlas.lastInfoWindow = false;
+                                }
+                            }
+                        })
         			}
         		}
         	});
@@ -123,6 +194,9 @@ let Atlas = () => {
         		events: {
         			click: (e, m, i) => {
         				console.log('click', i, data);
+                        let entryData = atlas.markers[i].data;
+                        let locName = entryData.name || 'Location ' + i;
+                        vex.dialog.alert(locName + ', ' + entryData.infected + ' infected at time ' + entryData.time);
         			}
         		}
         	}, {

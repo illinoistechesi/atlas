@@ -35,7 +35,7 @@
 				<input id="time" type="range">
 				<button id="forward" class="btn">Forward</button>
 			</div>
-			<a href="index.html"><button class="btn">Map Creator</button></a>
+			<a href="create.html"><button class="btn">Map Creator</button></a>
 		</div>
 		
 
@@ -111,6 +111,8 @@
 								let inf = location.infected || 0;
 								let ratio = inf / peakInfection;
 								icon.scale = (1.0) + (9.0 * ratio);
+								entry.data.time = val;
+								entry.data.infected = inf;
 								return icon;
 							});
 						}
