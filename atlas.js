@@ -1,13 +1,20 @@
 let Atlas = () => {
 
+    let hotKeys = {};
     let shiftDown = false;
+    let keyChar = false;
     window.addEventListener('keydown', e => {
+        keyChar = String.fromCharCode(e.which).toLowerCase();
         if(e.shiftKey){
             shiftDown = true;
+            if(hotKeys[keyChar]){
+                hotKeys[keyChar](e);
+            }
         }
     });
     window.addEventListener('keyup', e => {
         shiftDown = false;
+        keyChar = false;
     });
 
 	let atlas = {
@@ -91,7 +98,8 @@ let Atlas = () => {
                 let entry = atlas.markers[idx];
                 let vx = vex.dialog.prompt({
                     message: 'Update Marker Name',
-                    value: entry.data.name || 'Location ' + idx,
+                    value: entry.data.name,
+                    placeholder: 'Location ' + idx,
                     callback: (value) => {
                         if(value){
                             entry.data.name = value;
@@ -145,7 +153,7 @@ let Atlas = () => {
         lastInfoWindow: false,
 
         addDefaultMarker: (data) => {
-			return atlas.addMarker({
+			let entry = atlas.addMarker({
         		map: data.map,
                 name: data.name,
         		lat: data.coord.lat,
@@ -180,10 +188,18 @@ let Atlas = () => {
                                     atlas.lastInfoWindow = false;
                                 }
                             }
-                        })
+                        });
         			}
         		}
         	});
+            entry.ref.setIcon({
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 7.5,
+                fillColor: '#F00',
+                fillOpacity: 0.5,
+                strokeWeight: 0
+            });
+            return entry;
         },
 
         addViewMarker: (data) => {
@@ -194,9 +210,27 @@ let Atlas = () => {
         		events: {
         			click: (e, m, i) => {
         				console.log('click', i, data);
-                        let entryData = atlas.markers[i].data;
+                        let entry = atlas.markers[i];
+                        let entryData = entry.data;
                         let locName = entryData.name || 'Location ' + i;
-                        vex.dialog.alert(locName + ', ' + entryData.infected + ' infected at time ' + entryData.time);
+                        let locData = `
+                            <h3>${locName}</h3>
+                            <ul>
+                                <li>Time: ${entryData.time}</li>
+                                <li>Infected: ${entryData.infected}</li>
+                            </ul>
+                        `;
+                        let info = new google.maps.InfoWindow({
+                            content: locData
+                        });
+                        if(atlas.map){
+                            info.open(atlas.map, entry.ref);
+                            if(atlas.lastInfoWindow){
+                                atlas.lastInfoWindow.close();
+                                atlas.lastInfoWindow = false;
+                            }
+                            atlas.lastInfoWindow = info;
+                        }
         			}
         		}
         	}, {
@@ -271,10 +305,8 @@ let Atlas = () => {
 			return getPage(1);
 		},
 
-		setHotKey: (id, callback) => {
-        	document.getElementById(id).addEventListener('click', e => {
-        		callback(e);
-        	});
+		setHotKey: (shortcut, callback) => {
+            hotKeys[shortcut] = callback;
         }
 	}
 

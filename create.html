@@ -19,10 +19,15 @@
 	</head>
 
 	<body>
-
-		<div id="import" accesskey="i"></div>
-		<div id="export" accesskey="e"></div>
-		<div id="theme" accesskey="t"></div>
+        
+        <div id="shortcuts-list">
+            <h2>Shortcuts</h2>
+            <ul>
+                <li><span class="bold">Shift + I:</span> Import map data.</li>
+                <li><span class="bold">Shift + E:</span> Export map data.</li>
+                <li><span class="bold">Shift + T:</span> Change map theme.</li>
+            </ul>
+        </div>
 
 		<div id="map"></div>
 
@@ -30,6 +35,7 @@
             <h1>Atlas</h1>
             <p>Map Creator for F.I.S.H.</p>
             <a href="viz.html"><button class="btn">Simulation Viewer</button></a>
+            <button id="shortcuts" class="btn">View Shortcuts</button>
         </div>
 
 		<script type="text/javascript" src="assets/map-styles.js"></script>
@@ -118,7 +124,16 @@
                     });
                 }
 
-                atlas.setHotKey('import', e => {
+                let shortcutsList = document.getElementById('shortcuts-list');
+                document.getElementById('shortcuts').addEventListener('click', e => {
+                    let displayList = document.createElement('div');
+                        displayList.innerHTML = shortcutsList.innerHTML;
+                    vex.dialog.alert({
+                        unsafeMessage: displayList.outerHTML
+                    });
+                });
+
+                atlas.setHotKey('i', e => {
                     vex.dialog.prompt({
                         message: 'Enter a key for this map:',
                         callback: (tag) => {
@@ -140,7 +155,7 @@
                     });
                 });
 
-                atlas.setHotKey('export', e => {
+                atlas.setHotKey('e', e => {
                     vex.dialog.prompt({
                         message: 'Exported coordinates:',
                         value: atlas.markersToString(atlas.markers),
@@ -148,7 +163,7 @@
                     });
                 });
 
-                atlas.setHotKey('theme', e => {
+                atlas.setHotKey('t', e => {
                     vex.dialog.prompt({
                         message: 'Enter map theme URL:',
                         callback: (value) => {
