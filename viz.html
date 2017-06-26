@@ -21,9 +21,14 @@
 
 	<body>
 
-		<div id="theme" accesskey="t"></div>
-		<div id="visualize" accesskey="v"></div>
-		<div id="play" accesskey="p"></div>
+        <div id="shortcuts-list">
+            <h2>Shortcuts</h2>
+            <ul>
+                <li><span class="bold">Shift + V:</span> Load simulation data.</li>
+                <li><span class="bold">Shift + P:</span> Play animated simulation.</li>
+                <li><span class="bold">Shift + T:</span> Change map theme.</li>
+            </ul>
+        </div>
 
 		<div id="map"></div>
 
@@ -35,7 +40,8 @@
 				<input id="time" type="range">
 				<button id="forward" class="btn">Forward</button>
 			</div>
-			<a href="index.html"><button class="btn">Map Creator</button></a>
+			<a href="create.html"><button class="btn">Map Creator</button></a>
+			<button id="shortcuts" class="btn">View Shortcuts</button>
 		</div>
 		
 
@@ -66,6 +72,7 @@
 
 				let map = new google.maps.Map(mapElement, mapOptions);
 				window.mapRef = map;
+				atlas.setMap(map);
 
 				let mapThemeTag = localStorage.getItem('map-theme-tag');
 				let mapThemeStyle = localStorage.getItem('map-theme-style');
@@ -111,6 +118,8 @@
 								let inf = location.infected || 0;
 								let ratio = inf / peakInfection;
 								icon.scale = (1.0) + (9.0 * ratio);
+								entry.data.time = val;
+								entry.data.infected = inf;
 								return icon;
 							});
 						}
@@ -146,7 +155,7 @@
 					});
 
 					let itv;
-					atlas.setHotKey('play', e => {
+					atlas.setHotKey('p', e => {
 						if(itv){
 							vex.dialog.confirm({
 								message: 'Stop simulation?',
@@ -178,8 +187,16 @@
 							});
 						}
 					});
-
 				}
+
+                let shortcutsList = document.getElementById('shortcuts-list');
+                document.getElementById('shortcuts').addEventListener('click', e => {
+                    let displayList = document.createElement('div');
+                        displayList.innerHTML = shortcutsList.innerHTML;
+                    vex.dialog.alert({
+                        unsafeMessage: displayList.outerHTML
+                    });
+                });
 
 				vex.dialog.prompt({
 					message: 'Enter a key to load a map:',
@@ -218,7 +235,7 @@
 					}
 				});
 
-				atlas.setHotKey('theme', e => {
+				atlas.setHotKey('t', e => {
 					vex.dialog.prompt({
 						message: 'Enter map theme URL:',
 						callback: (value) => {
@@ -237,7 +254,7 @@
 					});
 				});
 
-				atlas.setHotKey('visualize', e => {
+				atlas.setHotKey('v', e => {
 					vex.dialog.prompt({
 						message: 'Enter simulation data for map: ' + window.MAP_TAG,
 						callback: (value) => {

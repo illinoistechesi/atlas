@@ -48,3 +48,11 @@ html, body {
 	background: black;
 	color: white;
 }
+
+#shortcuts-list {
+	display: none;
+}
+
+.bold {
+	font-weight: bold;
+}
