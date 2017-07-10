@@ -249,6 +249,80 @@ let Atlas = () => {
         	return entry;
         },
 
+        addCustomMarker: (data) => {
+            let entry = atlas.addMarker({
+                map: data.map,
+                lat: data.coord.lat,
+                lng: data.coord.lng,
+                events: {
+                    click: (e, m, i) => {
+                        console.log('click', i, data);
+                        let entry = atlas.markers[i];
+                        let info = new google.maps.InfoWindow({
+                            content: data.text
+                        });
+                        if(atlas.map){
+                            info.open(atlas.map, entry.ref);
+                            if(atlas.lastInfoWindow){
+                                atlas.lastInfoWindow.close();
+                                atlas.lastInfoWindow = false;
+                            }
+                            atlas.lastInfoWindow = info;
+                        }
+                    }
+                }
+            }, {
+                readOnly: true
+            });
+            let icon = data.icon || {
+                size: 0,
+                color: 'rgb(0,0,0)',
+                opacity: 1.0
+            };
+            entry.ref.setIcon({
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: icon.size,
+                fillColor: icon.color,
+                fillOpacity: icon.opacity,
+                strokeWeight: 0
+            });
+            return entry;
+        },
+
+        loadMapFromData: (map, value) => {
+            let input = value.split('$@@$').map(line => {
+                return line.split('$@$');
+            });
+            input.forEach(data => {
+                let lat = parseFloat(data[0]);
+                let lng = parseFloat(data[1]);
+                let color = data[2];
+                let size = parseFloat(data[3]);
+                let opacity = parseFloat(data[4]);
+                let text = data[5];
+                atlas.addCustomMarker({
+                    map: map,
+                    coord: {
+                        lat: lat,
+                        lng: lng
+                    },
+                    icon: {
+                        size: size,
+                        color: color,
+                        opacity: opacity
+                    },
+                    text: text
+                });
+            });
+            let first = atlas.markers[0];
+            if(first){
+                map.setCenter({
+                    lat: first.data.lat,
+                    lng: first.data.lng
+                });
+            }
+        },
+
 		// Map Themes
 
 		removeThemeLabels: (theme) => {
