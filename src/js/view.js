@@ -1,3 +1,25 @@
+let config = {
+	apiKey: 'AIzaSyA9EYUXVL5WAh6Aam1qXlWyvi3b7HLcZ1U',
+	authDomain: 'esigamma.firebaseapp.com',
+	databaseURL: 'https://esigamma.firebaseio.com',
+	projectId: 'esigamma',
+	storageBucket: 'esigamma.appspot.com',
+	messagingSenderId: '73416363603'
+};
+let ESIFirebase = firebase.initializeApp(config, 'Atlas');
+let db = ESIFirebase.database();
+
+function getQueryParams(qs) {
+	qs = qs.split('+').join(' ');
+	var params = {},
+		tokens,
+		re = /[?&]?([^=]+)=([^&]*)/g;
+	while (tokens = re.exec(qs)) {
+		params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+	}
+	return params;
+}
+
 let fillText = (tag, text) => {
 	let spans = document.getElementsByClassName(tag);
 	for(let s = 0; s < spans.length; s++){
@@ -5,6 +27,8 @@ let fillText = (tag, text) => {
 		span.innerText = text;
 	}
 }
+
+let params = getQueryParams(document.location.search);
 
 let atlas = Atlas();
 
@@ -38,14 +62,38 @@ atlas.init().then(done => {
         });
     });
 
-	vex.dialog.prompt({
-		message: 'Enter map data:',
-		callback: (value) => {
-			if(value){
-				atlas.loadMapFromData(map, value);
+    if(params.code){
+    	let ref = db.ref('atlas/saved/' + params.code);
+    	ref.once('value', snap => {
+    		let val = snap.val();
+    		if(val){
+    			atlas.loadMapFromData(map, val);
+    			vex.dialog.alert({
+	    			message: `Loaded map data saved at code: ${params.code}.`
+	    		});
+    		}
+    		else{
+    			vex.dialog.alert({
+	    			message: `No map data saved with code: ${params.code}.`
+	    		});
+    		}
+    	}).catch(err => {
+    		vex.dialog.alert({
+    			message: `Could not find a saved map with code: ${params.code}.`
+    		});
+    	});
+    }
+    else{
+		vex.dialog.prompt({
+			message: 'Enter map data:',
+			callback: (value) => {
+				if(value){
+					window.storedMapData = value;
+					atlas.loadMapFromData(map, value);
+				}
 			}
-		}
-	});
+		});
+    }
 
 	atlas.setHotKey('t', e => {
 		vex.dialog.prompt({
@@ -70,11 +118,60 @@ atlas.init().then(done => {
 			message: 'Enter map data:',
 			callback: (value) => {
 				if(value){
+					window.storedMapData = value;
 					atlas.loadMapFromData(map, value);
 				}
 			}
 		});
 	});
+
+	atlas.setHotKey('s', e => {
+		let dataToStore = window.storedMapData;
+		if(dataToStore){
+			vex.dialog.prompt({
+				message: 'Choose a code to save your map with.',
+				callback: (code) => {
+					if(code){
+						let ref = db.ref('atlas/saved/' + code);
+						ref.once('value', snap => {
+							let val = snap.val();
+							if(val){
+								vex.dialog.confirm({
+									message: `There is already a map saved with code: ${code}. Do you want to replace it?`,
+									callback: (replace) => {
+										if(replace){
+											let p = ref.set(dataToStore);
+											handleSavedMapOverwrite(p, code);
+										}
+									}
+								});
+							}
+							else{
+								let p = ref.set(dataToStore);
+								handleSavedMapOverwrite(p, code);
+							}
+						});
+					}
+				}
+			});
+		}
+		else{
+			vex.dialog.alert('There is no map data to save.');
+		}
+	});
+
+	let handleSavedMapOverwrite = (promise, code) => {
+		promise.then(done => {
+			let link = `illinoistechesi.github.io/atlas/view?code=${code}`;
+			vex.dialog.prompt({
+				message: `Share your map with this link:`,
+				value: link,
+				callback: () => {}
+			});
+		}).catch(err => {
+			vex.dialog.alert(`Something went wrong: ${err}.`);
+		});
+	}
 
 	/*atlas.setHotKey('u', e => {
 		vex.dialog.prompt({
