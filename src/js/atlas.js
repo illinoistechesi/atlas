@@ -5,7 +5,8 @@ window.Atlas = () => {
     let keyChar = false;
     window.addEventListener('keydown', e => {
         keyChar = String.fromCharCode(e.which).toLowerCase();
-        if(e.shiftKey){
+        //if(e.shiftKey){
+        if(e.ctrlKey){
             shiftDown = true;
             if(hotKeys[keyChar]){
                 hotKeys[keyChar](e);
