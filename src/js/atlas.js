@@ -1,4 +1,4 @@
-let Atlas = () => {
+window.Atlas = () => {
 
     let hotKeys = {};
     let shiftDown = false;

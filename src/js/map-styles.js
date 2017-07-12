@@ -1,4 +1,4 @@
-let MAP_STYLES = [
+window.MAP_STYLES = [
     {
         "elementType": "labels.text",
         "stylers": [
