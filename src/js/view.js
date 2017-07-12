@@ -79,7 +79,7 @@ atlas.init().then(done => {
     		}
     	}).catch(err => {
     		vex.dialog.alert({
-    			message: `Could not find a saved map with code: ${params.code}.`
+    			message: `Something went wrong with the code: ${params.code}, : ${err}.`
     		});
     	});
     }
