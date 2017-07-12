@@ -3,6 +3,10 @@ var browserify = require('browserify');
 var babelify = require('babelify');
 var source = require('vinyl-source-stream');
 var merge = require('merge-stream');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
+var sourcemaps = require('gulp-sourcemaps');
+var livereload = require('gulp-livereload');
 
 gulp.task('build', function(){
 	var files = ['map-styles', 'atlas', 'view', 'viz', 'create'];
@@ -11,11 +15,17 @@ gulp.task('build', function(){
 			.transform('babelify', {presets: ['es2015']})
 			.bundle()
 			.pipe(source(file + '.js'))
-			.pipe(gulp.dest('./dist/js'));
+			.pipe(buffer())
+			.pipe(sourcemaps.init())
+			.pipe(uglify())
+			.pipe(sourcemaps.write('./maps'))
+			.pipe(gulp.dest('./dist/js'))
+			.pipe(livereload());
 	}));
 });
 
 gulp.task('watch', ['build'], function(){
+	livereload.listen();
 	gulp.watch('./src/js/*.js', ['build']);
 });
 

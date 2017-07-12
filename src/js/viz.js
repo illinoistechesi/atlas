@@ -193,7 +193,6 @@ atlas.init().then(done => {
 					let tag = style.name;
 					let theme = JSON.parse(style.json);
 					atlas.changeMapStyle(map, tag, theme);
-
 					vex.dialog.alert('Changed map theme to: ' + tag);
 				}).catch(err => {
 					vex.dialog.alert('Error: ' + err);
