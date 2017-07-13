@@ -46,11 +46,16 @@ atlas.init().then(done => {
 	window.mapRef = map;
 	atlas.setMap(map);
 
-	let mapThemeTag = localStorage.getItem('map-theme-tag');
-	let mapThemeStyle = localStorage.getItem('map-theme-style');
-	if(mapThemeTag && mapThemeStyle){
-		let theme = JSON.parse(mapThemeStyle);
-		atlas.changeMapStyle(map, mapThemeTag, theme);
+	try{
+		let mapThemeTag = localStorage.getItem('map-theme-tag');
+		let mapThemeStyle = localStorage.getItem('map-theme-style');
+		if(mapThemeTag && mapThemeStyle){
+			let theme = JSON.parse(mapThemeStyle);
+			atlas.changeMapStyle(map, mapThemeTag, theme);
+		}
+	}
+	catch(e){
+		console.log(e);
 	}
 
     let shortcutsList = document.getElementById('shortcuts-list');
@@ -109,6 +114,24 @@ atlas.init().then(done => {
 				}).catch(err => {
 					vex.dialog.alert('Error: ' + err);
 				});
+			}
+		});
+	});
+
+	atlas.setHotKey('m', e => {
+		vex.dialog.prompt({
+			message: 'Enter map theme data:',
+			callback: (value) => {
+				let style = {
+					name: 'Custom Style',
+					json: value
+				}
+				localStorage.setItem('map-theme-tag', style.name);
+				localStorage.setItem('map-theme-style', style.json);
+				let tag = style.name;
+				let theme = JSON.parse(style.json);
+				atlas.changeMapStyle(map, tag, theme);
+				vex.dialog.alert('Changed map theme to: ' + tag);
 			}
 		});
 	});
